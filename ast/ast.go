@@ -58,4 +58,5 @@ func (rs *ReturnStatement) statementNode()       {}
 func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
 
 var _ Statement = &LetStatement{}
+var _ Statement = &ReturnStatement{}
 var _ Expression = &Identifier{}
