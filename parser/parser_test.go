@@ -68,6 +68,39 @@ func testLetStatement(t *testing.T, stmt ast.Statement, expectedName string) boo
 	return true
 }
 
+func TestReturnStatement(t *testing.T) {
+	input := `
+return 123;
+return 20;
+`
+	l := lexer.New(input)
+	p := New(l)
+
+	program := p.ParseProgram()
+	checkParserError(t, p)
+	if len(program.Statements) != 2 {
+		t.Fatalf(
+			"Program.Statements length expected: 2, but got %d",
+			len(program.Statements),
+		)
+	}
+
+	for _, stmt := range program.Statements {
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("stmt not *ast.returnStatement. got=%T", stmt)
+			continue
+		}
+
+		if returnStmt.TokenLiteral() != "return" {
+			t.Errorf(
+				"returnStatement.TokenLiteral not 'return', but got %s",
+				returnStmt.TokenLiteral(),
+			)
+		}
+	}
+}
+
 func checkParserError(t *testing.T, p *Parser) {
 	t.Helper()
 	errors := p.Errors()

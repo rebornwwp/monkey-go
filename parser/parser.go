@@ -54,6 +54,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -71,11 +73,24 @@ func (p *Parser) parseLetStatement() ast.Statement {
 		return nil
 	}
 
+	// TODO: do not skip
 	// just parser let, identifier and '=', skip follows
 	for !p.curTokenTypeIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
+	return stmt
+}
+
+func (p *Parser) parseReturnStatement() ast.Statement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	// TODO: now is skip, should improve it
+	for !p.curTokenTypeIs(token.SEMICOLON) {
+		p.nextToken()
+	}
 	return stmt
 }
 
@@ -91,9 +106,9 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenTypeIs(t) {
 		p.nextToken()
 		return true
-	} else {
-		return false
 	}
+	p.peekError(t)
+	return false
 }
 
 func (p *Parser) Errors() []string {
