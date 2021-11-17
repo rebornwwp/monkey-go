@@ -107,7 +107,55 @@ func (es *ExpressionStatement) String() string {
 	return ""
 }
 
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
+func (il *IntegerLiteral) expressionNode()      {}
+func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
+func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+
+type PrefixExpression struct {
+	Token    token.Token // The prefix token, e.g. !
+	Operator string
+	Right    Expression
+}
+
+// !true, +1, -1
+func (pe *PrefixExpression) expressionNode()      {}
+func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PrefixExpression) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("(")
+	buf.WriteString(pe.Operator)
+	buf.WriteString(pe.Right.String())
+	buf.WriteString(")")
+	return buf.String()
+}
+
+type InfixExpression struct {
+	Token    token.Token
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+// 1+1, 1*1
+func (ie *InfixExpression) expressionNode()      {}
+func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *InfixExpression) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("(")
+	buf.WriteString(ie.Left.String())
+	buf.WriteString(" " + ie.Operator + " ")
+	buf.WriteString(ie.Right.String())
+	buf.WriteString(")")
+	return buf.String()
+}
+
 var _ Statement = &LetStatement{}
 var _ Statement = &ReturnStatement{}
 var _ Statement = &ExpressionStatement{}
 var _ Expression = &Identifier{}
+var _ Expression = &IntegerLiteral{}
