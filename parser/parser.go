@@ -2,7 +2,9 @@ package parser
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
+	"strings"
 
 	"example.com/m/ast"
 	"example.com/m/lexer"
@@ -57,6 +59,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefix(token.TRUE, p.parseBoolean)
+	p.registerPrefix(token.FALSE, p.parseBoolean)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -149,6 +153,7 @@ func (p *Parser) parseReturnStatement() ast.Statement {
 }
 
 func (p *Parser) parseExpressionStatement() ast.Statement {
+	defer Trace().UnTrace()
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
@@ -160,6 +165,7 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	defer Trace().UnTrace()
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
@@ -180,10 +186,12 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 // prefix parser
 func (p *Parser) parseIdentifier() ast.Expression {
+	defer Trace().UnTrace()
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
+	defer Trace().UnTrace()
 	expr := &ast.IntegerLiteral{Token: p.curToken}
 
 	value, ok := strconv.ParseInt(p.curToken.Literal, 0, 64)
@@ -198,6 +206,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
+	defer Trace().UnTrace()
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
@@ -209,6 +218,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 // infix parser
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	defer Trace().UnTrace()
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
 		Left:     left,
@@ -218,6 +228,11 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	p.nextToken()
 	expression.Right = p.parseExpression(precedence)
 	return expression
+}
+
+// parse bool type
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Token: p.curToken, Value: p.curTokenTypeIs(token.TRUE)}
 }
 
 // precedence
@@ -265,4 +280,53 @@ func (p *Parser) Errors() []string {
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
+}
+
+// helper
+type IndentLevel int
+
+func (l *IndentLevel) Increment() {
+	*l++
+}
+func (l *IndentLevel) Decrement() {
+	*l--
+}
+func (l *IndentLevel) String() string {
+	s := ""
+	for i := *l; i > 0; i-- {
+		s += "\t"
+	}
+	return s
+}
+
+var IndentationLevel *IndentLevel
+
+func init() {
+	IndentationLevel = new(IndentLevel)
+}
+
+type dummy struct{}
+
+func Trace() dummy {
+	IndentationLevel.Increment()
+
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		fmt.Println("what??")
+		return dummy{}
+	}
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		fmt.Println("what??")
+		return dummy{}
+	}
+
+	s := strings.Split(fn.Name(), "/")
+	fmt.Printf("%s%s()\n", IndentationLevel, s[len(s)-1])
+
+	return dummy{}
+}
+
+func (dummy) UnTrace() {
+	IndentationLevel.Decrement()
 }
