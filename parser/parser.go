@@ -61,6 +61,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -153,7 +154,6 @@ func (p *Parser) parseReturnStatement() ast.Statement {
 }
 
 func (p *Parser) parseExpressionStatement() ast.Statement {
-	defer Trace().UnTrace()
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
@@ -165,7 +165,6 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	defer Trace().UnTrace()
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
@@ -186,12 +185,10 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 // prefix parser
 func (p *Parser) parseIdentifier() ast.Expression {
-	defer Trace().UnTrace()
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
-	defer Trace().UnTrace()
 	expr := &ast.IntegerLiteral{Token: p.curToken}
 
 	value, ok := strconv.ParseInt(p.curToken.Literal, 0, 64)
@@ -206,7 +203,6 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	defer Trace().UnTrace()
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
@@ -218,7 +214,6 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 // infix parser
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
-	defer Trace().UnTrace()
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
 		Left:     left,
@@ -233,6 +228,17 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 // parse bool type
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.curToken, Value: p.curTokenTypeIs(token.TRUE)}
+}
+
+// group expression
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.nextToken()
+	exp := p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return exp
 }
 
 // precedence
