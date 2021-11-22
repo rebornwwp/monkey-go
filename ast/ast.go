@@ -163,8 +163,48 @@ func (b *Boolean) expressionNode()      {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
 
+type IfExpression struct {
+	Token       token.Token // The 'if' token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) expressionNode()      {}
+func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IfExpression) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("if")
+	buf.WriteString(ie.Condition.String())
+	buf.WriteString(" ")
+	buf.WriteString(ie.Consequence.String())
+	if ie.Alternative != nil {
+		buf.WriteString("else ")
+		buf.WriteString(ie.Alternative.String())
+	}
+	return buf.String()
+}
+
+type BlockStatement struct {
+	Token      token.Token // the { token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode()       {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	var buf bytes.Buffer
+	for _, b := range bs.Statements {
+		buf.WriteString(b.String())
+	}
+	return buf.String()
+}
+
 var _ Statement = &LetStatement{}
 var _ Statement = &ReturnStatement{}
 var _ Statement = &ExpressionStatement{}
+var _ Statement = &BlockStatement{}
 var _ Expression = &Identifier{}
 var _ Expression = &IntegerLiteral{}
+var _ Expression = &Boolean{}
+var _ Expression = &IfExpression{}
