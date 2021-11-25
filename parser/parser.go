@@ -135,10 +135,10 @@ func (p *Parser) parseLetStatement() ast.Statement {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
+	p.nextToken()
 
-	// TODO: do not skip
-	// just parser let, identifier and '=', skip follows
-	for !p.curTokenTypeIs(token.SEMICOLON) {
+	stmt.Value = p.parseExpression(LOWEST)
+	if p.peekTokenTypeIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
