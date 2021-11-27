@@ -38,6 +38,9 @@ const (
 	IF       = "IF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
+
+	// data type
+	STRING = "STRING"
 )
 
 type TokenType string

@@ -245,6 +245,15 @@ func (ce *CallExpression) String() string {
 	return out.String()
 }
 
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode()      {}
+func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
+func (sl *StringLiteral) String() string       { return sl.Token.Literal }
+
 var _ Statement = &LetStatement{}
 var _ Statement = &ReturnStatement{}
 var _ Statement = &ExpressionStatement{}
@@ -254,3 +263,5 @@ var _ Expression = &IntegerLiteral{}
 var _ Expression = &Boolean{}
 var _ Expression = &IfExpression{}
 var _ Expression = &FunctionLiteral{}
+var _ Expression = &CallExpression{}
+var _ Expression = &StringLiteral{}
