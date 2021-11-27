@@ -149,9 +149,9 @@ func (p *Parser) parseReturnStatement() ast.Statement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
 	p.nextToken()
+	stmt.ReturnValue = p.parseExpression(LOWEST)
 
-	// TODO: now is skip, should improve it
-	for !p.curTokenTypeIs(token.SEMICOLON) {
+	if p.curTokenTypeIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 	return stmt
