@@ -291,6 +291,26 @@ func (ie *IndexExpression) String() string {
 	return out.String()
 }
 
+type HashLiteral struct {
+	Token token.Token // the '{' token
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode()      {}
+func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashLiteral) String() string {
+	var out bytes.Buffer
+	pairs := []string{}
+	for key, value := range hl.Pairs {
+		pairs = append(pairs, key.String()+":"+value.String())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}
+
 var _ Statement = &LetStatement{}
 var _ Statement = &ReturnStatement{}
 var _ Statement = &ExpressionStatement{}
@@ -303,3 +323,5 @@ var _ Expression = &FunctionLiteral{}
 var _ Expression = &CallExpression{}
 var _ Expression = &StringLiteral{}
 var _ Expression = &ArrayLiteral{}
+var _ Expression = &IndexExpression{}
+var _ Expression = &HashLiteral{}

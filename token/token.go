@@ -43,6 +43,7 @@ const (
 	STRING   = "STRING"
 	LBRACKET = "["
 	RBRACKET = "]"
+	COLON    = ":"
 )
 
 type TokenType string
