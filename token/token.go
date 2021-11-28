@@ -40,7 +40,9 @@ const (
 	RETURN   = "RETURN"
 
 	// data type
-	STRING = "STRING"
+	STRING   = "STRING"
+	LBRACKET = "["
+	RBRACKET = "]"
 )
 
 type TokenType string

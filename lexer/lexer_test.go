@@ -78,6 +78,7 @@ if (5 < 10) {
 10 != 9;
 "foobar"
 "foo bar"
+[1, 2];
 `
 	tests := []struct {
 		expectedToken   token.TokenType
@@ -176,6 +177,14 @@ if (5 < 10) {
 		// string
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
+
+		// array
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RBRACKET, "]"},
+		{token.SEMICOLON, ";"},
 
 		{token.EOF, ""},
 	}
