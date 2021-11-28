@@ -343,24 +343,6 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	exp.Arguments = p.parseExpressionList(token.RPAREN)
 	return exp
 }
-func (p *Parser) parseCallArguments() []ast.Expression {
-	args := []ast.Expression{}
-	if p.peekTokenTypeIs(token.RPAREN) {
-		p.nextToken()
-		return args
-	}
-	p.nextToken()
-	args = append(args, p.parseExpression(LOWEST))
-	for p.peekTokenTypeIs(token.COMMA) {
-		p.nextToken()
-		p.nextToken()
-		args = append(args, p.parseExpression(LOWEST))
-	}
-	if !p.expectPeek(token.RPAREN) {
-		return nil
-	}
-	return args
-}
 
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
