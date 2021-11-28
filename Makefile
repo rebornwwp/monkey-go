@@ -4,5 +4,5 @@
 test:
 	@go get ./...
 
-test_coverage:
+test-coverage:
 	@go test ./... -coverprofile=coverage.out
