@@ -90,10 +90,9 @@ func (l *Lexer) NextToken() token.Token {
 			num := l.readNumber()
 			tk = newToken(token.INT, num)
 			return tk
-		} else {
-			tk = newToken(token.ILLEGAL, "")
-			return tk
 		}
+		tk = newToken(token.ILLEGAL, "")
+		return tk
 	}
 
 	l.readChar()

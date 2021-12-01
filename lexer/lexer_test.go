@@ -22,6 +22,30 @@ func TestReadChar(t *testing.T) {
 	}
 }
 
+func TestPeekChar(t *testing.T) {
+	input := "hello"
+	l := New(input)
+	for i, x := range []byte(input)[1:] {
+		if x != l.peekChar() {
+			t.Fatalf("test %d, peek character wrong: expected: %q, got: %q", i, x, l.peekChar())
+		}
+		l.readChar()
+	}
+	if byte(0) != l.peekChar() {
+		t.Fatalf("peek character wrong: expected: %q, got: %q", byte(0), l.peekChar())
+	}
+}
+
+func TestIllegalChar(t *testing.T) {
+	input := "你好"
+	l := New(input)
+	x := l.NextToken()
+	if x.Type != token.ILLEGAL {
+		t.Fatalf("expected token ILLEGAL, got %q", x.Type)
+	}
+
+}
+
 func TestNextToken(t *testing.T) {
 	input := "(){}+=,;"
 	tests := []struct {
@@ -41,7 +65,6 @@ func TestNextToken(t *testing.T) {
 	lexer := New(input)
 	for i, expected := range tests {
 		tk := lexer.NextToken()
-		t.Logf("%+v\n", tk)
 		if expected.expectedToken != tk.Type {
 			t.Fatalf("tests[%d], token type wrong, expected %q, got %q", i, expected.expectedToken, tk.Type)
 		}
@@ -50,10 +73,6 @@ func TestNextToken(t *testing.T) {
 			t.Fatalf("tests[%d], token literal wrong, expected %q, got %q", i, expected.expectedLiteral, tk.Literal)
 		}
 	}
-	tk := lexer.NextToken()
-	t.Logf("%+v\n", tk)
-	x := lexer.NextToken()
-	t.Logf("%+v\n", x)
 }
 
 func TestNextToken1(t *testing.T) {
